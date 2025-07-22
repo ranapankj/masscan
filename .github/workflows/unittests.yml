@@ -1,4 +1,4 @@
-name: Build AMD64 Masscan 
+name: Build amd64 Masscan 
 
 on:
   push:
@@ -31,50 +31,7 @@ jobs:
           name: masscan-linux-amd64
           path: bin/masscan
 
-  build-windows-amd64:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Set up MinGW x64
-        uses: egor-tensin/setup-mingw@v2
-        with:
-          platform: x64
 
-      - name: Build amd64 binary
-        run: |
-          mingw32-make.exe CC=x86_64-w64-mingw32-gcc
 
-      - name: Verify binary architecture
-        run: |
-          file bin/masscan.exe | grep "64-bit"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: masscan-windows-amd64
-          path: bin/masscan.exe
-
-  build-macos-amd64:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: |
-          brew install libpcap
-
-      - name: Build amd64 binary
-        run: |
-          make
-
-      - name: Verify binary architecture
-        run: |
-          file bin/masscan | grep "x86_64"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: masscan-macos-amd64
-          path: bin/masscan
  
