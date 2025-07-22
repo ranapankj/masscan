@@ -1,28 +1,79 @@
-name: masscan unit tests
+name: Build AMD64 Masscan
 
 on:
   push:
-    branches: [master]
+    branches: [ main ]
   pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [master]
-
-permissions:
-  contents: read
+    branches: [ main ]
 
 jobs:
-  regress:
-    name: Run regression tests
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
+  build-linux-amd64:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout masscan
-        uses: actions/checkout@v3
-      - name: Install libpcap-dev
-        if: ${{ vars.RUNNER_OS == 'Linux' }}
-        run: sudo apt-get install -y libpcap-dev
-      - name: Run regression tests
-        run: make test
- 
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc libpcap-dev
+
+      - name: Build amd64 binary
+        run: |
+          make CC="gcc -m64" CFLAGS="-m64 -O2" LDFLAGS="-m64"
+
+      - name: Verify binary architecture
+        run: |
+          file bin/masscan | grep "64-bit"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: masscan-linux-amd64
+          path: bin/masscan
+
+  build-windows-amd64:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MinGW x64
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
+
+      - name: Build amd64 binary
+        run: |
+          mingw32-make.exe CC=x86_64-w64-mingw32-gcc
+
+      - name: Verify binary architecture
+        run: |
+          file bin/masscan.exe | grep "64-bit"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: masscan-windows-amd64
+          path: bin/masscan.exe
+
+  build-macos-amd64:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew install libpcap
+
+      - name: Build amd64 binary
+        run: |
+          make
+
+      - name: Verify binary architecture
+        run: |
+          file bin/masscan | grep "x86_64"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: masscan-macos-amd64
+          path: bin/masscan
