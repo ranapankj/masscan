@@ -77,3 +77,4 @@ jobs:
         with:
           name: masscan-macos-amd64
           path: bin/masscan
+ 
